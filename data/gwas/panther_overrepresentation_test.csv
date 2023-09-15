@@ -1,0 +1,21 @@
+spp.go.terms,spp.gene.count,spp.fold.enrich,spp.p.adj,all1.go.terms,all1.gene.count,all1.fold.enrichment,all1.p.adj,epi.go.terms,ep.gene.count,epi.fold.enrichment,epi.p.adj,dom.go.terms,dom.genes.count,dom.gene.enrichment,dom.p.adj
+fatty acid elongation (GO:0030497),7,33.11,5.57E-06,fatty acid elongation (GO:0030497),6,57.39,2.02E-06,fatty acid elongation (GO:0030497),7,56.85,1.18E-07,biotin biosynthetic process (GO:0009102),3,60.13,2.32E-02
+protein maturation (GO:0051604),7,20.97,7.91E-05,fatty acid biosynthetic process (GO:0006633),6,19.47,6.03E-04,fatty acid biosynthetic process (GO:0006633),8,22.04,3.72E-06,biotin metabolic process (GO:0006768),3,60.13,2.32E-02
+carbohydrate transport (GO:0008643),5,16.64,1.49E-02,monocarboxylic acid biosynthetic process (GO:0072330),8,17.31,1.80E-05,monocarboxylic acid biosynthetic process (GO:0072330),10,18.37,1.96E-07,fatty acid elongation (GO:0030497),7,59.08,8.94E-08
+fatty acid biosynthetic process (GO:0006633),10,16.05,1.30E-06,lipid biosynthetic process (GO:0008610),6,9.4,3.11E-02,lipid biosynthetic process (GO:0008610),8,10.64,6.90E-04,fatty acid biosynthetic process (GO:0006633),8,22.91,2.71E-06
+monocarboxylic acid biosynthetic process (GO:0072330),13,13.91,2.05E-08,fatty acid metabolic process (GO:0006631),6,9.24,3.40E-02,fatty acid metabolic process (GO:0006631),8,10.46,7.79E-04,monocarboxylic acid biosynthetic process (GO:0072330),11,21,5.68E-09
+lipid biosynthetic process (GO:0008610),10,7.75,6.93E-04,carboxylic acid biosynthetic process (GO:0046394),9,6.6,5.31E-03,carboxylic acid biosynthetic process (GO:0046394),11,6.84,3.71E-04,lipid biosynthetic process (GO:0008610),8,11.06,5.09E-04
+fatty acid metabolic process (GO:0006631),10,7.62,8.01E-04,organic acid biosynthetic process (GO:0016053),9,6.54,5.65E-03,organic acid biosynthetic process (GO:0016053),11,6.79,4.01E-04,fatty acid metabolic process (GO:0006631),8,10.87,5.75E-04
+cellular lipid metabolic process (GO:0044255),11,5.37,5.60E-03,monocarboxylic acid metabolic process (GO:0032787),8,6.19,2.81E-02,cellular lipid metabolic process (GO:0044255),8,6.71,1.77E-02,carboxylic acid biosynthetic process (GO:0046394),12,7.76,2.64E-05
+carboxylic acid biosynthetic process (GO:0046394),14,5.07,5.68E-04,small molecule biosynthetic process (GO:0044283),10,5.42,8.26E-03,monocarboxylic acid metabolic process (GO:0032787),10,6.57,1.86E-03,organic acid biosynthetic process (GO:0016053),12,7.7,2.88E-05
+organic acid biosynthetic process (GO:0016053),14,5.03,6.22E-04,biosynthetic process (GO:0009058),18,3.58,4.63E-04,lipid metabolic process (GO:0006629),8,5.8,4.83E-02,monocarboxylic acid metabolic process (GO:0032787),11,7.51,1.46E-04
+monocarboxylic acid metabolic process (GO:0032787),13,4.97,1.80E-03,,,,,small molecule biosynthetic process (GO:0044283),12,5.53,9.46E-04,cellular lipid metabolic process (GO:0044255),8,6.97,1.33E-02
+lipid metabolic process (GO:0006629),11,4.64,2.06E-02,,,,,carboxylic acid metabolic process (GO:0019752),14,4.14,3.05E-03,small molecule biosynthetic process (GO:0044283),13,6.22,7.96E-05
+small molecule biosynthetic process (GO:0044283),15,4.02,3.52E-03,,,,,oxoacid metabolic process (GO:0043436),14,4.08,3.55E-03,lipid metabolic process (GO:0006629),8,6.02,3.64E-02
+carboxylic acid metabolic process (GO:0019752),17,2.93,4.35E-02,,,,,organic acid metabolic process (GO:0006082),14,4.05,3.95E-03,carboxylic acid metabolic process (GO:0019752),15,4.61,3.14E-04
+biosynthetic process (GO:0009058),26,2.55,3.67E-03,,,,,biosynthetic process (GO:0009058),21,3.54,6.93E-05,oxoacid metabolic process (GO:0043436),15,4.55,3.71E-04
+primary metabolic process (GO:0044238),35,1.97,1.85E-02,,,,,small molecule metabolic process (GO:0044281),16,3.07,2.23E-02,organic acid metabolic process (GO:0006082),15,4.5,4.18E-04
+metabolic process (GO:0008152),46,1.86,1.64E-03,,,,,cellular biosynthetic process (GO:0044249),16,2.94,3.90E-02,biosynthetic process (GO:0009058),21,3.68,3.13E-05
+organic substance metabolic process (GO:0071704),39,1.85,3.05E-02,,,,,,,,,small molecule metabolic process (GO:0044281),16,3.2,1.31E-02
+biological_process (GO:0008150),65,1.53,1.46E-03,,,,,,,,,cellular biosynthetic process (GO:0044249),16,3.05,2.31E-02
+,,,,,,,,,,,,organic substance biosynthetic process (GO:1901576),16,2.96,3.29E-02
