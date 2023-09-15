@@ -22,6 +22,8 @@ library(ggtree)
 library(phangorn)
 library(ggnewscale)
 library(treeio)
+library(RColorBrewer)
+library(ggpubr)
 
 chr.tree <- read.iqtree('/Users/arafat/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/chr/concatenate/aln/chr.concatenated.partitions.rxml.treefile')
 chr.tree@phylo <- midpoint(chr.tree@phylo)
@@ -89,19 +91,19 @@ t1$data[which(t1$data$SH_aLRT >= 70 & t1$data$UFboot  >= 70),]$bootstrap <- '1'
 
 t1_tips <- t1 + geom_tree(aes(color=bootstrap == '1')) +
   scale_color_manual(name='Bootstrap', values=setNames( c('black', 'grey'), c(T,F)), guide = "none") +
-  geom_tippoint(data=t1$data[which(t1$data$Host != 'A. strigosus'),] , aes(fill=Host), shape=21) +
-  new_scale_fill()
-  
+  #geom_tippoint(data=t1$data[which(t1$data$Host != 'A. strigosus'),] , aes(fill=Host), shape=21) +
+  geom_tippoint(data=t1$data, aes(fill=CHR.clade), shape=21)  + new_scale_fill() 
 
 t1_mat1 <- gheatmap(t1_tips, meta_matrix.site, width=0.1,
-                    colnames_offset_y=4, colnames_position='top', custom_column_labels='Population') +
-  scale_fill_viridis_d(option="A", name="Sample\nSite (population)") +
-  new_scale_fill()
+                    colnames_offset_y=5, colnames_position='top', custom_column_labels='Population') +
+  scale_fill_viridis_d(option="D", name="Population") +
+  coord_cartesian(clip = "off") +  new_scale_fill()
 
-gheatmap(t1_mat1, meta_matrix.clade, width=0.1, offset=0.0125,
-         colnames_offset_y=10, colnames_position='top', custom_column_labels='Bacteria\nSpp') +
-  scale_fill_viridis_d(option="A", name="Bacteria\nSpp") +
-  scale_y_continuous(expand=c(0.03, 0.3))
+gheatmap(t1_mat1, meta_matrix.host, width=0.1, offset=0.0125,
+         colnames_offset_y=5, colnames_position='top', custom_column_labels='Host') +
+  scale_fill_viridis_d(option="B", name="Host") +
+  scale_y_continuous(expand=c(0.03, 0.3)) +
+  coord_cartesian(clip = "off")
 
 
 #t1_mat2 <- gheatmap(t1_mat1, meta_matrix.host, width=0.1, offset=0.0125,
@@ -116,18 +118,19 @@ t2$data[which(t2$data$SH_aLRT >= 70 & t2$data$UFboot  >= 70),]$bootstrap <- '1'
 
 t2_tips <- t2 + geom_tree(aes(color=bootstrap == '1')) +
   scale_color_manual(name='Bootstrap', values=setNames( c('black', 'grey'), c(T,F)), guide = "none") +
-  geom_tippoint(data=t2$data[which(t2$data$Host != 'A. strigosus'),] , aes(fill=Host), shape=21) +
+  #geom_tippoint(data=t2$data[which(t2$data$Host != 'A. strigosus'),] , aes(fill=Host), shape=21) +
+  geom_tippoint(data=t2$data, aes(fill=CHR.clade), shape=21) +
   new_scale_fill()
 
 
 t2_mat1 <- gheatmap(t2_tips, meta_matrix.site, width=0.1, 
-                    colnames_offset_y=8, legend_title="Sample Site", colnames_position='top') +
-  scale_fill_viridis_d(option="A", name="Sample\nSite") +
+                    colnames_offset_y=8, legend_title="Population", colnames_position='top') +
+  scale_fill_viridis_d(option="D", name="Population") +
   new_scale_fill()
 
-gheatmap(t2_mat1, meta_matrix.clade, width=0.1, offset=0.006,
-         colnames_offset_y=2.5, legend_title="Clade", colnames_position='top') +
-  scale_fill_viridis_d(option="A", name="Clade") +
+gheatmap(t2_mat1, meta_matrix.host, width=0.1, offset=0.006,
+         colnames_offset_y=2.5, legend_title="Host", colnames_position='top') +
+  scale_fill_viridis_d(option="B", name="Host") +
   scale_y_continuous(expand=c(0.03, 0.3))
 
 ######################################################
@@ -136,46 +139,49 @@ gheatmap(t2_mat1, meta_matrix.clade, width=0.1, offset=0.006,
 # Plot tree for CHR 
 t1_tips <- t1 + geom_tree(aes(color=bootstrap == '1')) +
   scale_color_manual(name='Bootstrap', values=setNames( c('black', 'grey'), c(T,F)), guide = "none") +
-  geom_tippoint(data=t1$data[which(t1$data$CHR.clade != 'B. canariense'),], aes(fill=CHR.clade), shape=21) +
-  labs(fill='Bradyrhizobium\nspecies') + new_scale_fill() 
+  geom_tippoint(data=t1$data, aes(fill=CHR.clade), shape=21) +
+  labs(fill='Bradyrhizobium\nspecies') + new_scale_fill() +
+  geom_treescale( y = -5, offset=1)  
 
 t1_mat1 <- gheatmap(t1_tips, meta_matrix.site, width=0.1, 
                     colnames_offset_y=10, legend_title="Sample Site", colnames_position='top', font.size=3) +
-  scale_fill_viridis_d(option="B", name="Sample Site") +
+  scale_fill_viridis_d(option="D", name="Sample Site") +
   new_scale_fill()
 
-gheatmap(t1_mat1, meta_matrix.host, width=0.1, offset=0.0125,
+t1_mat1 <- gheatmap(t1_mat1, meta_matrix.host, width=0.1, offset=0.0125,
          colnames_offset_y=5, legend_title="Host", colnames_position='top', font.size = 3) +
   scale_fill_viridis_d(option="B", name="Host") +
   scale_y_continuous(expand=c(0.03, 0.3)) +
-  ggtitle('A. CHR haplotype phylogeny')
+  ggtitle('A. Chromosomal haplotype phylogeny') 
 
 # Plot tree for SYM 
 t2_tips <- t2 + geom_tree(aes(color=bootstrap == '1')) +
   scale_color_manual(name='Bootstrap', values=setNames( c('black', 'grey'), c(T,F)), guide = "none") +
-  geom_tippoint(data=t2$data[which(t2$data$CHR.clade != 'B. canariense'),] , aes(fill=CHR.clade), shape=21) +
-  labs(fill='Bradyrhizobium\nspecies') + new_scale_fill() 
+  geom_tippoint(data=t2$data, aes(fill=CHR.clade), shape=21) +
+  labs(fill='Bradyrhizobium\nspecies') + new_scale_fill() +
+  geom_treescale( y = -7, offset=1)  
 
 
 t2_mat1 <- gheatmap(t2_tips, meta_matrix.site, width=0.1, 
                     colnames_offset_y=10, legend_title="Sample Site", colnames_position='top', font.size = 3) +
-  scale_fill_viridis_d(option="B", name="Sample Site") +
+  scale_fill_viridis_d(option="D", name="Sample Site") +
   new_scale_fill()
 
 t2_mat1 <- gheatmap(t2_mat1, meta_matrix.host, width=0.1, offset=0.006,
          colnames_offset_y=5, legend_title="Host", colnames_position='top', font.size = 3) +
   scale_fill_viridis_d(option="B", name="Host") +
   scale_y_continuous(expand=c(0.03, 0.3)) +
-  ggtitle('B. SYM haplotype phylogeny')
+  ggtitle('B. symICE haplotype phylogeny')
 
-t2_mat1
 
-t2_mat1 + geom_cladelabel(node=563, label="SYM 1", align=TRUE, offset=-0.012,  color='red') +
+
+t2_mat1 <- t2_mat1 + geom_cladelabel(node=563, label="SYM 1", align=TRUE, offset=-0.012,  color='red') +
   geom_cladelabel(node=570, label="SYM 2", align=TRUE, offset=-0.02,  color='blue') +
   geom_cladelabel(node=613, label="SYM 3", align=TRUE, offset=-0.02,  color='brown') +
   geom_cladelabel(node=632, label="SYM 4", align=TRUE, offset=-0.02,  color='green') +
   geom_cladelabel(node=671, label="SYM 5", align=TRUE, offset=-0.01,  color='orange')
 
+ggarrange(t1_mat1, t2_mat1, ncol=2, common.legend = TRUE, legend="right")
 
 ########################
 # Calculate Tajima's D #
@@ -276,16 +282,17 @@ s5 <- nuc.div(sym5.sym)
 
 compare_nucdiv <- data.frame(clade=c('Whole Tree','SYM 1 Clade', 'SYM 2 Clade', 'SYM 3 Clade', 'SYM 4 Clade', 'SYM 5 Clade'),
            CHR=c(c.all, c1, c2, c3, c4, c5),
-           SYM=c(s.all, s1, s2, s3, s4, c5))
+           SYM=c(s.all, s1, s2, s3, s4, c5))ß
 
 compare_nucdiv <- melt(compare_nucdiv, id='clade')
 
 ggplot(compare_nucdiv, aes(x=clade, y=value, fill=variable)) + 
-  geom_bar(stat='identity', position='dodge') +
+  geom_bar(stat='identity', position='dodge') +ß
   xlab('Comparison level') + ylab('Nucleotide Diversity') +
-  scale_fill_brewer(palette = "Paired") + 
+  scale_fill_brewer(palette = "Paired", label=c('Chromosomal haplotypes', 'symICEs')) + 
   theme(legend.position = 'top', legend.title = element_blank(),
-        axis.text.x=element_text(angle=30, vjust=0.5, hjust=0.5))
+        axis.text.x=element_text(angle=30, vjust=0.5, hjust=0.5)) +
+  ggtitle('Nucleotide diversity comparison based on symICE phylogeney clades')
 
 # Why SYM 2 clade has opposite trend? i.e. higher diversity in CHR tree to SYM ?
 
