@@ -15,7 +15,6 @@ library('phangorn')
 ###############
 # Master meta #
 ###############
-
 master <- read.csv('~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/haplotype_meta.csv')
 master.tab <- as.data.frame(table(master$Site, master$Host))
 master.tab <- master.tab[which(master.tab$Freq != 0), ]
@@ -49,7 +48,6 @@ for (i in 1:1000){
 }
 
 # Genome haplotype
-
 for (i in 1:1000){
   genome.haplotypes <- bootstrap_csv[[i]][, c('CHR_haplotype', 'SYM_haplotype')]
   bootstrap_csv[[i]]$Genome_haplotype <- apply(genome.haplotypes, 1, paste, collapse='_')
@@ -148,7 +146,7 @@ p1 <- ggplot(all_chr_dom, aes(x=reorder(Haplotype, -Mean), y=Mean)) +
   theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust=1), 
         panel.border = element_blank(), 
         panel.grid.minor = element_blank(), axis.line = element_line(colour = "black")) +
-  ggtitle('A. CHR') + ylab('Frequency') + xlab('') +
+  ggtitle('A. Chromosome') + ylab('Frequency') + xlab('') +
   scale_y_continuous(limits = c(3.5, 5)) 
 
 p2 <- ggplot(all_sym_dom, aes(x=reorder(Haplotype, -Mean), y=Mean)) +
@@ -159,8 +157,11 @@ p2 <- ggplot(all_sym_dom, aes(x=reorder(Haplotype, -Mean), y=Mean)) +
   theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust=1), 
         panel.border = element_blank(), 
         panel.grid.minor = element_blank(), axis.line = element_line(colour = "black")) +
-  ggtitle('B. SYM') + ylab('Frequency') + xlab('') +
-  scale_y_continuous(limits = c(3.5, 5))
+  ggtitle('B. symICE') + ylab('Frequency') + xlab('') +
+  scale_y_continuous(limits = c(3.5, 5)) +
+  xlab('Haplotypes')
+
+genome_haplotype_labs <-  c('K21_R23_I55_G4\nD53_A9_L7_Z3', 'K1_R1_I1_G1\nD23_A21_L1_Z3', 'K1_R1_I6_G1\nD16_A14_L1_Z6')
 
 p3 <- ggplot(all_genome_dom, aes(x=reorder(Haplotype, -Mean), y=Mean)) +
   #geom_bar(stat='identity', fill='lightgray', color='black') +
@@ -171,12 +172,20 @@ p3 <- ggplot(all_genome_dom, aes(x=reorder(Haplotype, -Mean), y=Mean)) +
         panel.border = element_blank(), 
         panel.grid.minor = element_blank(), axis.line = element_line(colour = "black")) +
   ggtitle('C. Genome') + ylab('Frequency') + xlab('') +
-  scale_y_continuous(limits = c(3.5, 5))
+  scale_y_continuous(limits = c(3.5, 5)) +
+  scale_x_discrete(labels = genome_haplotype_labs) 
 
 
-grid.arrange(p1, p2, nrow=1)
+grid.arrange(p1, p2, p3, nrow=1)
 
+######################################### 
+# subset the dominant genome haplotypes #
+#########################################
+genomeHaplotypes <- p3$data$Haplotype
 
+meta[which(meta$Genome_haplotype == 'K1_R1_I1_G1_D23_A21_L1_Z3'), c('Host', 'Site')]
+meta[which(meta$Genome_haplotype == 'K1_R1_I6_G1_D16_A14_L1_Z6'), c('Host', 'Site')]
+meta[which(meta$Genome_haplotype == 'K21_R23_I55_G4_D53_A9_L7_Z3'), c('Host', 'Site')]
 ####################################
 # Define dominant without Acmispon #
 ####################################
@@ -295,6 +304,8 @@ grid.arrange(p1, p2, nrow=1)
 ####################################
 # Site host haplotype distribution #
 ####################################
+meta = read.csv('~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/meta_all.csv')
+
 hostSite <- as.data.frame(table(meta$Host, meta$CHR_haplotype, meta$Site))
 hostSite <- hostSite[which(hostSite$Freq != 0), ]
 colnames(hostSite) <- c('Host', 'CHR_haplotype', 'Site', 'Count')
@@ -305,6 +316,343 @@ hostSite.dcast <- dcast(hostSite.multiple, Site+Host ~ CHR_haplotype, value.var=
 hostSite.dcast[is.na(hostSite.dcast)] <- 0
 hostSite.dcast$sum <- rowSums(hostSite.dcast[3:243])
 hostSite.dcast[3:243] <- hostSite.dcast[3:243]/hostSite.dcast$sum
+
+hostSite.2 <- as.data.frame(table(meta$Host, meta$Site))
+hostSite.2 <- hostSite.2[which(hostSite.2$Freq != 0), ]
+hostSite.2$noHost <- 1
+head(hostSite.2)
+hostSite.2 <- aggregate(data=hostSite.2, noHost~Var2, FUN=sum)
+hostSite.2[which(hostSite.2$noHost > 1),]
+
+
+################################################### 
+# Correlation of total host for each CHR per site #
+###################################################
+library(ggpubr)
+
+dominant <- c('K1_R1_I1_G1', 'K1_R1_I3_G1', 'K1_R3_I1_G1','K21_R23_I55_G4', 'K18_R1_I1_G1', 'K1_R1_I6_G1')
+
+hostSite$noHost <- 1
+
+hostSite.cortest <- aggregate(Count~CHR_haplotype+Site, data=hostSite, FUN=sum)
+hostSite.noHost <- aggregate(noHost~CHR_haplotype+Site, data=hostSite, FUN=sum)
+
+
+hostSite.summary <- merge(hostSite.cortest, hostSite.noHost, by=c('CHR_haplotype', 'Site'))
+
+# Summary stat
+corPlot.count.mean <- aggregate(Count~CHR_haplotype, data=hostSite.summary, FUN=mean)
+corPlot.count.se <- aggregate(Count~CHR_haplotype, data=hostSite.summary, FUN=se)
+
+corPlot.count <- merge(corPlot.count.mean, corPlot.count.se, by='CHR_haplotype')
+
+corPlot.noHost.mean <- aggregate(noHost~CHR_haplotype, data=hostSite.summary, FUN=mean)
+corPlot.noHost.se <- aggregate(noHost~CHR_haplotype, data=hostSite.summary, FUN=se)
+
+corPlot.noHost <- merge(corPlot.noHost.mean, corPlot.noHost.se, by='CHR_haplotype')
+corPlot <- merge(corPlot.noHost, corPlot.count, by='CHR_haplotype') 
+colnames(corPlot) <- c('CHR_haplotype', 'Host.mean', 'Host.se', 'Count.mean', 'Count.se')
+
+corPlot$dominant <- 'Non-dominant'
+corPlot[which(corPlot$CHR_haplotype %in% dominant),]$dominant <- 'Dominant'
+
+ggplot(corPlot, aes(y=Count.mean, x=Host.mean, color=dominant)) + geom_point()
+
+shapiro.test(sqrt(corPlot$Host.mean+1))
+shapiro.test(sqrt(corPlot$Count.mean+1))
+qqnorm(corPlot$Host.mean)
+
+
+cor.test(corPlot$Host.mean, corPlot$Count.mean)
+
+ggscatter(corPlot, x='Host.mean', y='Count.mean', #facet.by='dominant',
+          add="reg.line", conf.int=T, cor.coef = T, cor.method='pearson') +
+  geom_errorbar(aes(ymax=Count.mean+Count.se, ymin=Count.mean-Count.se), width=0.1) +
+  geom_errorbarh(aes(xmax=Host.mean+Host.se, xmin=Host.mean-Host.se)) +
+  xlab('#Host per Sampling Site') + ylab('Haplotype Abundance per Sampling Site') +
+  geom_point(aes(x=Host.mean, y=Count.mean, color=dominant)) +
+  theme(legend.title=element_blank())
+
+
+################################################### 
+# Correlation of total host for each SYM per site #
+###################################################
+library(ggpubr)
+
+meta = read.csv('~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/meta_all.csv')
+
+hostSite <- as.data.frame(table(meta$Host, meta$SYM_haplotype, meta$Site))
+hostSite <- hostSite[which(hostSite$Freq != 0), ]
+colnames(hostSite) <- c('Host', 'SYM_haplotype', 'Site', 'Count')
+sampleSite <- aggregate(Count~Site, hostSite, sum)
+
+hostSite.multiple <- hostSite[which(hostSite$Count >= 1),]
+hostSite.dcast <- dcast(hostSite.multiple, Site+Host ~ SYM_haplotype, value.var='Count')
+hostSite.dcast[is.na(hostSite.dcast)] <- 0
+hostSite.dcast$sum <- rowSums(hostSite.dcast[3:243])
+hostSite.dcast[3:243] <- hostSite.dcast[3:243]/hostSite.dcast$sum
+
+hostSite.2 <- as.data.frame(table(meta$Host, meta$Site))
+hostSite.2 <- hostSite.2[which(hostSite.2$Freq != 0), ]
+hostSite.2$noHost <- 1
+head(hostSite.2)
+hostSite.2 <- aggregate(data=hostSite.2, noHost~Var2, FUN=sum)
+hostSite.2[which(hostSite.2$noHost > 1),]
+
+
+dominant <- c('D12_A1_L1_Z1', 'D16_A14_L1_Z6', 'D53_A9_L7_Z3', 'D23_A21_L1_Z3', 'D8_A28_L17_Z3')
+
+hostSite$noHost <- 1
+
+hostSite.cortest <- aggregate(Count~SYM_haplotype+Site, data=hostSite, FUN=sum)
+hostSite.noHost <- aggregate(noHost~SYM_haplotype+Site, data=hostSite, FUN=sum)
+
+
+hostSite.summary <- merge(hostSite.cortest, hostSite.noHost, by=c('SYM_haplotype', 'Site'))
+
+# Summary stat
+corPlot.count.mean <- aggregate(Count~SYM_haplotype, data=hostSite.summary, FUN=mean)
+corPlot.count.se <- aggregate(Count~SYM_haplotype, data=hostSite.summary, FUN=se)
+
+corPlot.count <- merge(corPlot.count.mean, corPlot.count.se, by='SYM_haplotype')
+
+corPlot.noHost.mean <- aggregate(noHost~SYM_haplotype, data=hostSite.summary, FUN=mean)
+corPlot.noHost.se <- aggregate(noHost~SYM_haplotype, data=hostSite.summary, FUN=se)
+
+corPlot.noHost <- merge(corPlot.noHost.mean, corPlot.noHost.se, by='SYM_haplotype')
+corPlot <- merge(corPlot.noHost, corPlot.count, by='SYM_haplotype') 
+colnames(corPlot) <- c('SYM_haplotype', 'Host.mean', 'Host.se', 'Count.mean', 'Count.se')
+
+corPlot$dominant <- 'Non-dominant'
+corPlot[which(corPlot$SYM_haplotype %in% dominant),]$dominant <- 'Dominant'
+
+ggplot(corPlot, aes(y=Count.mean, x=Host.mean, color=dominant)) + geom_point()
+
+cor.test(corPlot$Host.mean, corPlot$Count.mean)
+
+ggscatter(corPlot, x='Host.mean', y='Count.mean', #facet.by='dominant',
+          add="reg.line", conf.int=T, cor.coef = T, cor.method='pearson') +
+  geom_errorbar(aes(ymax=Count.mean+Count.se, ymin=Count.mean-Count.se), width=0.1) +
+  geom_errorbarh(aes(xmax=Host.mean+Host.se, xmin=Host.mean-Host.se)) +
+  xlab('#Host per Sampling Site') + ylab('Haplotype Abundance per Sampling Site') +
+  geom_point(aes(x=Host.mean, y=Count.mean, color=dominant)) +
+  theme(legend.title=element_blank())
+
+
+
+########################################################## 
+# Which CHR haplotypes are associated with dominant SYM? #
+##########################################################
+
+meta = read.csv('~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/meta_all.csv')
+
+dominantSYM = c('D53_A9_L7_Z3', 'D16_A14_L1_Z6', 'D12_A1_L1_Z1', 'D23_A21_L1_Z3', 'D8_A28_L17_Z3')
+
+domSYM_df <-  meta[which(meta$SYM_haplotype %in% dominantSYM), ]
+
+
+# Epidemic Sym association
+domSYM_df.1 <- domSYM_df[which(domSYM_df$SYM_haplotype == 'D12_A1_L1_Z1'), c('Strain', 'CHR_haplotype', 'Site', 'Source', 'Host')]
+domSYM_df.2 <-domSYM_df[which(domSYM_df$SYM_haplotype == 'D16_A14_L1_Z6'), c('Strain', 'CHR_haplotype', 'Site', 'Source', 'Host')]
+
+# Dominant Sym association
+domSYM_df.3 <-domSYM_df[which(domSYM_df$SYM_haplotype == 'D53_A9_L7_Z3'), c('Strain', 'CHR_haplotype', 'Site', 'Source', 'Host')]
+domSYM_df.4 <-domSYM_df[which(domSYM_df$SYM_haplotype == 'D23_A21_L1_Z3'), c('Strain', 'CHR_haplotype', 'Site', 'Source', 'Host')]
+domSYM_df.5 <-domSYM_df[which(domSYM_df$SYM_haplotype == 'D8_A28_L17_Z3'), c('Strain', 'CHR_haplotype', 'Site', 'Source', 'Host')]
+
+table(domSYM_df.1$CHR_haplotype, domSYM_df.1$Site)
+
+#################################
+# Summary of haplotype and host #
+#################################
+meta = read.csv('~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/meta_all.csv')
+
+hoststat <- as.data.frame(table(meta$CHR_haplotype, meta$Host))
+hoststat <- hoststat[which(hoststat$Freq != 0), ]
+hoststat$count <- 1
+
+hoststat.summary <- aggregate(count~Var1, data=hoststat, FUN=sum)
+hoststat.summary.mulriple <- hoststat.summary[which(hoststat.summary$count > 1), ]
+
+haplostat <- as.data.frame(table(meta$CHR_haplotype))
+hoststat.summary.mulriple$Var1
+
+haplostat <- as.data.frame(table(meta$CHR_haplotype))
+hoststat.summary.mulriple$Var1
+
+haplostat.summary <- haplostat[which(haplostat$Var1 %in% hoststat.summary.mulriple$Var1),]
+head(haplostat.summary)
+median(haplostat.summary$Freq)
+
+
+###########################
+# Brady genome statistics #
+###########################
+meta = read.csv('~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/meta_clade.csv')
+
+## Genome stat
+genomeStat <- read.csv('/Users/arafat/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/Genome_stat/all_genome_stat.csv', header=F) 
+colnames(genomeStat) <- c('isolate', 'genome_size')
+genomeStat$isolate <- gsub('.gbk.fasta', '', genomeStat$isolate)
+head(genomeStat)
+mean(genomeStat$genome_size)
+
+## Isolate lists with available genome
+meta_population <- meta$Strain
+speciesList <- meta[which(meta$CHR.clade == 'B. canariense'),]$Strain
+epi1_list <- meta[which(meta$CHR_haplotype == 'K1_R1_I1_G1'),]$Strain
+epi2_list <- meta[which(meta$CHR_haplotype == 'K1_R1_I3_G1'),]$Strain
+epi3_list <- meta[which(meta$CHR_haplotype == 'K1_R3_I1_G1'),]$Strain
+
+## Genome stat by levels
+genomeStat$spp <- 'NA' #Not B. Canariense
+genomeStat[which(genomeStat$isolate %in% speciesList),]$spp = 'B. Canariense'
+genomeStat$haplotype <- 'Other'
+genomeStat[which(genomeStat$isolate %in% epi1_list), ]$haplotype <- 'K1_R1_I1_G1'
+genomeStat[which(genomeStat$isolate %in% epi2_list), ]$haplotype <- 'K1_R1_I3_G1'
+genomeStat[which(genomeStat$isolate %in% epi3_list), ]$haplotype <- 'K1_R3_I1_G1'
+
+
+mean(genomeStat$genome_size)
+mean(genomeStat[which(genomeStat$spp != 'NA'), ]$genome_size)
+mean(genomeStat[which(genomeStat$haplotype == 'K1_R1_I1_G1'), ]$genome_size)
+mean(genomeStat[which(genomeStat$haplotype == 'K1_R1_I3_G1'), ]$genome_size)
+mean(genomeStat[which(genomeStat$haplotype == 'K1_R3_I1_G1'), ]$genome_size)
+
+## Symbiotic genes
+symGenes <- read.csv('/Users/arafat/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/Genome_stat/sym_pa_mat.csv')
+rownames(symGenes) <- symGenes$X
+symGenes <- symGenes[ -c(1)]
+#colSums(symGenes, na.rm=T)
+symGenes.sum <- rowSums(symGenes, na.rm=T)
+symGenes.count <- rowSums(symGenes != 'NA', na.rm=T)
+
+symGenes.stat <- cbind(symGenes.sum, symGenes.count)
+
+
+## CHR genes
+chrGenes <- read.csv('/Users/arafat/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/Genome_stat/chr_pa_mat.csv')
+chrGenes <- chrGenes[!grepl('B_', chrGenes$X),]
+rownames(chrGenes) <- chrGenes$X
+chrGenes <- chrGenes[ -c(1)]
+#colSums(chrGenes != 'NA', na.rm=T)
+chrGenes.sum <- rowSums(chrGenes, na.rm=T)
+chrGenes.count <- rowSums(chrGenes != 'NA' , na.rm=T)
+
+chrGenes.stat <- as.data.frame(cbind(chrGenes.sum, chrGenes.count))
+chrGenes.stat$isolate <- rownames(chrGenes.stat)
+
+chrGenes.stat$spp <- 'NA' #Not B. Canariense
+chrGenes.stat[which(chrGenes.stat$isolate %in% speciesList),]$spp = 'B. Canariense'
+chrGenes.stat$haplotype <- 'Other'
+chrGenes.stat[which(chrGenes.stat$isolate %in% epi1_list), ]$haplotype <- 'K1_R1_I1_G1'
+chrGenes.stat[which(chrGenes.stat$isolate %in% epi2_list), ]$haplotype <- 'K1_R1_I3_G1'
+chrGenes.stat[which(chrGenes.stat$isolate %in% epi3_list), ]$haplotype <- 'K1_R3_I1_G1'
+
+colnames(chrGenes.stat) <- c('size', 'gene_count', 'isolate', 'spp', 'haplotype')
+
+mean(chrGenes.stat$size)
+mean(chrGenes.stat[which(chrGenes.stat$spp != 'NA'), ]$size)
+mean(chrGenes.stat[which(chrGenes.stat$spp == 'NA'), ]$size)
+mean(chrGenes.stat[which(chrGenes.stat$haplotype == 'K1_R1_I1_G1'), ]$size)
+mean(chrGenes.stat[which(chrGenes.stat$haplotype == 'K1_R1_I3_G1'), ]$size)
+mean(chrGenes.stat[which(chrGenes.stat$haplotype == 'K1_R3_I1_G1'), ]$size)
+
+mean(chrGenes.stat$gene_count)
+mean(chrGenes.stat[which(chrGenes.stat$spp != 'NA'), ]$gene_count)
+mean(chrGenes.stat[which(chrGenes.stat$spp == 'NA'), ]$gene_count)
+mean(chrGenes.stat[which(chrGenes.stat$haplotype == 'K1_R1_I1_G1'), ]$gene_count)
+mean(chrGenes.stat[which(chrGenes.stat$haplotype == 'K1_R1_I3_G1'), ]$gene_count)
+mean(chrGenes.stat[which(chrGenes.stat$haplotype == 'K1_R3_I1_G1'), ]$gene_count)
+
+# Let's combine all statistics
+
+combinedStat <- data.frame(Sample = c('K1_R1_I1_G1', 'K1_R1_I3_G1', 'K1_R3_I1_G1', 'B. Canariense', 'Metapopulation'),
+           Genomes = c(40, 9, 5, 129, 224),
+           "Mean Genome Size" = c(8576512, 8550880, 8879986, 8662062, 8662254),
+           "Mean Core CHR Gene Number" = c(1872.396, 1873.222, 1872.5, 1866.5, 1851.872),
+           "Mean Core CHR Gene Size" = c(1830391, 1831363, 1831305, 1823858, 1810410),
+           "Mean SYM Gene Number" = c(21, 21, 21, 21, 21),
+           "Mean SYM Gene Size" = c(20458, 20458, 20458, 20458, 20458))
+
+combinedStat$CHR_Coverage <- (combinedStat$Mean.Core.CHR.Gene.Size / combinedStat$Mean.Genome.Size)*100 
+combinedStat$SYM_Coverage <- (combinedStat$Mean.SYM.Gene.Size / combinedStat$Mean.Genome.Size)*100 
+
+head(combinedStat)
+View(combinedStat)
+####################
+# SYM ANI plotting #
+####################
+library('ggplot2')
+
+meta = read.csv('~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/meta_clade.csv')
+symANI = read.table('~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/coreSIgenes/symANI.out.txt')
+colnames(symANI)[1:3] <- c('A', 'B', 'ANI')
+
+symANI$A <- gsub('^.*sym_', '', symANI$A)
+symANI$A <- gsub('.fasta', '', symANI$A)
+
+symANI$B <- gsub('^.*sym_', '', symANI$B)
+symANI$B <- gsub('.fasta', '', symANI$B)
+
+head(symANI)
+
+c('K1_R1_I1_G1', 'K1_R1_I3_G1', 'K1_R3_I1_G1','K21_R23_I55_G4', 'K18_R1_I1_G1', 'K1_R1_I6_G1')
+
+epidemic <- meta[which(meta$CHR_haplotype %in%  c('K1_R1_I1_G1', 'K1_R1_I3_G1', 'K1_R3_I1_G1')),]
+dominant <- meta[which(meta$CHR_haplotype %in%  c('K1_R1_I1_G1', 'K1_R1_I3_G1', 'K1_R3_I1_G1','K21_R23_I55_G4', 'K18_R1_I1_G1', 'K1_R1_I6_G1')),]
+spp <-  meta[which(meta$CHR.clade == 'B. canariense'),]
+chr1 <- meta[which(meta$CHR_haplotype == 'K1_R1_I1_G1'),]
+chr2 <- meta[which(meta$CHR_haplotype == 'K1_R1_I3_G1'),]
+chr3 <- meta[which(meta$CHR_haplotype == 'K1_R3_I1_G1'),]
+
+
+
+epidemicSymANI <- symANI[which(symANI$A %in% epidemic$Strain & symANI$B %in% epidemic$Strain),]$ANI
+dominantSymANI <- symANI[which(symANI$A %in% dominant$Strain & symANI$B %in% dominant$Strain),]$ANI
+sppSymANI <- symANI[which(symANI$A %in% spp$Strain & symANI$B %in% spp$Strain),]$ANI
+
+chr1SymANI <- symANI[which(symANI$A %in% chr1$Strain & symANI$B %in% chr1$Strain),]$ANI
+chr2SymANI <- symANI[which(symANI$A %in% chr2$Strain & symANI$B %in% chr2$Strain),]$ANI
+chr3SymANI <- symANI[which(symANI$A %in% chr3$Strain & symANI$B %in% chr3$Strain),]$ANI
+
+length(epidemicSymANI)
+length(dominantSymANI)
+length(sppSymANI)
+
+pop.mean <- mean(symANI$ANI)
+spp.mean <- mean(sppSymANI)
+chr1.mean <- mean(chr1SymANI)
+chr2.mean <-mean(chr2SymANI)
+chr3.mean <- mean(chr3SymANI)
+
+pop.se <- se(symANI$ANI)
+spp.se <- se(sppSymANI)
+chr1.se <- se(chr1SymANI)
+chr2.se <-se(chr2SymANI)
+chr3.se <- se(chr3SymANI)
+
+symANI.df <- data.frame(loci = 'B. symICE',
+                        population = c('K1_R1_I1_G1', 'K1_R1_I3_G1', 'K1_R3_I1_G1', 'B. canariense', 'Metapopulation'),
+                        ani.mean = c(chr1.mean, chr2.mean, chr3.mean, spp.mean, pop.mean),
+                        std_err = c(chr1.se, chr2.se, chr3.se, spp.se, pop.se))
+
+chrANI.df <- read.csv('~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/ani_bootstrap.csv')
+chrANI.df$loci = 'A. Chromosome'
+
+ANI.df <- rbind(symANI.df, chrANI.df)
+
+ggplot(ANI.df, aes(x=factor(population, levels=c('K1_R1_I1_G1', 'K1_R1_I3_G1', 'K1_R3_I1_G1', 'B. canariense', 'Meta Population')), y=ani.mean)) + geom_point() +
+  geom_errorbar(aes(ymin=ani.mean-std_err, ymax=ani.mean+std_err), width=.2,
+                position=position_dodge(.9)) +
+  facet_grid(~loci, scales='free') +
+  xlab('Population') + ylab('ANI mean') +
+  scale_x_discrete(labels=expression('K1_R1_I1_G1', 'K1_R1_I3_G1', 'K1_R3_I1_G1', italic('B. canariense'), 'Metapopulation')) +
+  theme_bw() +
+  theme(axis.text.x=element_text(angle=45,hjust=1))  +
+  
+  ggtitle('Average nucleotide identity (ANI) estimates for core orthologous loci')
+  
 
 #################################
 # Dominant Distribution by Site #
@@ -318,7 +666,9 @@ ggplot(chr_dom.by_site, aes(x=Haplotype, y=Count)) +
   geom_bar(stat='identity') + 
   facet_wrap(~Site) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1 )) +
-  ggtitle('CHR Dominant Haplotypes by site')
+  ggtitle('CHR Dominant Haplotypes by site') +
+  
+
 
 ggplot(sym_dom.by_site, aes(x=Haplotype, y=Count)) +
   geom_bar(stat='identity') + 
@@ -504,7 +854,7 @@ ggplot(dom_chr.site.host, aes(x=reorder(Site, -Freq), y=Freq, fill=Host)) +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust=1)) + 
   facet_wrap(~Haplotype) +
-  ggtitle('Dominant CHR haplotype') +
+  ggtitle('Dominant chromosomal haplotypes by sampling sites') +
   xlab('Sampling Site') + ylab('Frequency / Sampling site')
   
 # SYM loci
@@ -527,7 +877,7 @@ ggplot(dom_sym.site.host, aes(x=reorder(Site, -Freq), y=Freq, fill=Host)) +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust=1)) + 
   facet_wrap(~Haplotype) +
-  ggtitle('Dominant SYM haplotypes') +
+  ggtitle('Dominant symICE haplotypes by sampling sites') +
   xlab('Sampling Site') + ylab('Frequency / site')
 
 # Genome loci
@@ -634,6 +984,8 @@ epi.sym.sites <- epi.sym.sites[which(epi.sym.sites$Dist >= 10),]
 ################################
 # Haplotype count distribution #
 ########3#######################
+library(ggplot2)
+
 meta = read.csv('~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/meta_all.csv')
 
 haploHostCount <-  as.data.frame.matrix(table(meta$CHR_haplotype, meta$Host))
@@ -644,16 +996,18 @@ haploHostDF <- as.data.frame(haploHostArray)
 
 p0 <- ggplot(haploHostDF, aes(x=haploHostArray, y=..density..)) + 
   geom_histogram(binwidth = 1, fill = "blue", colour=1, alpha=0.5) +
-  geom_density(aes(y=..scaled..), linetypgeogeo) +
-  xlab('#Host Species') + ylab('Haplotype Density') +
+  #geom_density(aes(y=..scaled..), linetypgeogeo) +
+  xlab('#Host Species') + ylab('Haplotype Frequency') +
   theme_bw() +
-  ggtitle('A. Host range distribution of haplotypes')
+  ggtitle('A. Host range distribution of chromosomal haplotypes')
 
+p0
 ######################################################################################
 # Does dominant haplotype associated with more species compared to non-dominant one? #
 ######################################################################################
 library(ggsignif)
 library(ggpubr)
+library(cowplot)
 
 meta = read.csv('~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/meta_all.csv')
 
@@ -661,7 +1015,7 @@ meta = read.csv('~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizob
 meta.multiple <- as.data.frame.matrix(table(meta$Site, meta$Host))
 meta.multiple$hostCount <- rowSums(meta.multiple != 0)
 meta.multiple$sites <- rownames(meta.multiple)
-meta.multiple.host <- meta.multiple[which(meta.multiple$hostCount > 2), 'sites']
+meta.multiple.host <- meta.multiple[which(meta.multiple$hostCount >= 2), 'sites']
 
 chr.dom.haplotypes <- c('K1_R1_I1_G1', 'K1_R1_I3_G1', 'K1_R3_I1_G1',
                         'K21_R23_I55_G4', 'K18_R1_I1_G1', 'K1_R1_I6_G1')
@@ -686,7 +1040,7 @@ colnames(chr.hostAffinity) <- c('dominant', 'mean', 'se')
 p1 <- ggplot(chr.hostAffinity, aes(dominant, mean)) + geom_bar(stat='identity', colour='black', fill='blue', alpha=0.5) + 
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.2) +
   ggtitle('B. Host range by dominance') + theme_bw() + ylab('Mean Host Range') +
-  annotate('text', label="paste(italic(P), \" = \", 3.007^{-06})", x=2, y=3, parse=T) +
+  annotate('text', label="paste(italic(P), \" = \", 7.669^{-09})", x=2, y=3, parse=T) +
   xlab('Haplotype Type')
 
 p2 <- ggplot(chr.hostAffinity, aes(dominant, mean)) + geom_bar(stat='identity', fill='blue', alpha=0.5) + 
@@ -694,9 +1048,12 @@ p2 <- ggplot(chr.hostAffinity, aes(dominant, mean)) + geom_bar(stat='identity', 
   ggtitle('Three or more host sampled') + theme_classic() +
   xlab('Haplotype')
 
-#grid.arrange(p1, p2, ncol=2)
+grid.arrange(p0, p1, ncol=2)
 
-grid.arrange(p0, p1, nrow=1, widths=c(2,1))
+plot_grid(p0, p1,
+          align="h", ncol = 2, rel_widths = c(6.5/10,4.5/10))
+
+#grid.arrange(p1, p2, nrow=1, widths=c(2,1))
 
 
 
@@ -708,6 +1065,7 @@ grid.arrange(p0, p1, nrow=1, widths=c(2,1))
 hap_abund.chr <- hap_freq.chr[which(hap_freq.chr$Var2 %in% unique(chr_dom.by_site$Haplotype)),]
 hap_abund.chr <- dcast(hap_abund.chr, Var1~Var2)
 hap_abund.chr$other <- 1 - rowSums(hap_abund.chr[,2:7])
+colnames(hap_abund.chr)[8] <- 'All other haplotypes'
 #hap_abund.chr$Longitude <- c(-116.4194,-116.4447, -116.4751, -121.5420, -123.063,-118.3089, -120.6088, -121.5631, -122.4090, -117.2575, -120.6224, -117.7080, -117.7800, -117.7691, -116.4548, -119.6897, -120.0493, -117.323, -116.6547)
 #hap_abund.chr$Latitude <- c(33.2713,33.2713, 34.15315, 36.05631, 38.31930,34.12196, 35.00812, 36.37866, 38.85985, 33.80517, 35.05448, 34.11039, 34.13436, 34.16382, 33.58357, 34.01139, 34.69150, 33.96593, 33.97972)
 #hap_abund.chr <- hap_abund.chr[which(hap_abund.chr$other != 1),]
@@ -725,11 +1083,11 @@ hap_abund.sym$other <- 1 - rowSums(hap_abund.sym[,2:6])
 # Pie-chart
 hap_abund.chr.melt <- melt(hap_abund.chr, id.vars = 'Var1')
 ggplot(hap_abund.chr.melt, aes(x='', y=value, fill=variable)) +
-   geom_bar(stat='identity', width=1, color='black') +
+   geom_bar(stat='identity', width=1, color="black") +
    coord_polar("y", start=0) +
    facet_wrap(~Var1) +
    theme_void() +
-   scale_color_manual(values=c("#e28743", "#E69F00", "#21130d", '#00fffd', '#ff00eb', "#56B4E9", "#999999"))
+   scale_fill_manual(name='', values=c("#b12d0a", "#ff7434", "#E69F00", '#ff00eb', '#00fffd', "#0096FF", "#999999"))
 
 # SYM Pie-chart
 hap_abund.sym.melt <- melt(hap_abund.sym, id.vars = 'Var1')
@@ -887,4 +1245,4 @@ barplot(d1, main='#Unique CHR haplotype per sampling site')
 barplot(d2, main='#Unique SYM haplotype per sampling site')
 barplot(d3, main='#Host species per sampling site')
 
-write.csv(genomes, file='~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/meta_genomes.csv', row.names = F)
+#write.csv(genomes, file='~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/meta_genomes.csv', row.names = F)
