@@ -178,11 +178,11 @@ library(ape)
 #######
 
 # Genclone object 
-dna <- read.dna("~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Epidemic Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/chr/concatenate/aln/chr.meta.concatenated.fasta", format = "fasta")
+dna <- read.dna("~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/chr/concatenate/aln/chr.meta.concatenated.fasta", format = "fasta")
 pop <- DNAbin2genind(dna)
 
 # Meta file
-meta <- read.csv('~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Epidemic Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/meta_all.csv', header=T)
+meta <- read.csv('~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/meta_all.csv', header=T)
 meta <- meta[,1:28]
 
 # Matching strain names from meta to  the fasta file
@@ -192,7 +192,8 @@ mat <- match(indNames(pop), meta$Sample)
 meta <- meta[mat, ]
 
 # Assigning population structure from meta
-strata(pop) <- meta[, c('Site',   'Host', 'CHR_haplotype', 'SYM_haplotype')]
+#strata(pop) <- meta[, c('Site',   'Host', 'CHR_haplotype', 'SYM_haplotype')]
+strata(pop) <- meta[, c('Site',   'Host')]
 
 # Define the population
 setPop(pop) <- ~ Site
@@ -218,7 +219,7 @@ plot(amovaSig.rand)
 #######
 
 # Genclone object 
-dna <- read.dna("~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Epidemic Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/sym/concatenate/aln/sym.meta.concatenated.fasta", format = "fasta")
+dna <- read.dna("~/GDrive/Sachs/Chapter3_Epidemic_Genotype/Sequences/Bradyrhizobium/Dataset/Complete/Dataset/sym/concatenate/aln/sym.meta.concatenated.fasta", format = "fasta")
 pop <- DNAbin2genind(dna)
 
 # Meta file
