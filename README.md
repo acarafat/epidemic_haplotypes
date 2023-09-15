@@ -1,4 +1,4 @@
-#  Epidemic spread of Bradyrhizobium haplotypes
+#  Epidemic spread of *Bradyrhizobium* haplotypes
 
 
 ## Manuscript
