@@ -8,6 +8,8 @@
 ## Directory Structure
 `data` folder contains dataset to do different evolutionary and population genetics  analysis. You need to update the paths to the data files in the R scripts. 
 
+`jupyter` folder contains JuPyteR notebooks that was used to define the haplotypes. 
+
 `src` folder contains R scripts use to analyze the data.
 - `dominant_haplotype_bootstrap.R`: Do bootstrap analysis, define dominant haplotypes, distribution and statistics of domiannt haplotypes. 
 - `genetic_diversity_analysis.R`: Phylogenetic tree, nucleotide diversity, selection analysis, Tajima's D, ANI etc.
